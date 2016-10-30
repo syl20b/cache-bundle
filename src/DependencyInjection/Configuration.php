@@ -41,6 +41,7 @@ class Configuration implements ConfigurationInterface
             ->append($this->addValidationSection())
             ->append($this->addLoggingSection())
             ->append($this->addDataCollectorSection())
+            ->append($this->addDependencyInjectionContainerSection())
             ->end();
 
         return $treeBuilder;
@@ -252,4 +253,40 @@ class Configuration implements ConfigurationInterface
 
         return $node;
     }
+
+    /**
+     * Configure the "cache.dic" section.
+     *
+     * @return ArrayNodeDefinition
+     */
+    private function addDependencyInjectionContainerSection()
+    {
+        $tree = new TreeBuilder();
+        $node = $tree->root('dic');
+
+        $node
+            ->canBeEnabled()
+            ->addDefaultsIfNotSet()
+            ->children()
+                ->arrayNode('services')
+                    ->useAttributeAsKey('definition')
+                    ->prototype('array')
+                        ->children()
+                            ->arrayNode('methods')
+                                ->useAttributeAsKey('method')
+                                ->prototype('array')
+                                    ->children()
+                                       ->scalarNode('service_id')->isRequired()->end()
+                                        ->scalarNode('ttl')->end()
+                                    ->end()
+                                ->end()
+                            ->end()
+                        ->end()
+                    ->end()
+                ->end()
+            ->end();
+
+        return $node;
+    }
+
 }

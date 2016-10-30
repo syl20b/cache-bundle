@@ -31,4 +31,25 @@ class CacheExtensionTest extends TestCase
         $this->assertTrue($config['enabled']);
         $this->assertEquals($config['service_id'], 'default');
     }
+
+    public function testDependencyInjectionContainerBuilder()
+    {
+        $container = $this->createContainerFromFile('dic');
+
+        $this->assertTrue($container->has('service_foo'));
+        $this->assertTrue($container->has('service_bar'));
+
+        $config = $container->getParameter('cache.dic');
+
+        $this->assertTrue(isset($config['enabled']));
+        $this->assertTrue($config['enabled']);
+
+        $this->assertTrue($container->has('service_foo'));
+        $this->assertTrue($container->has('service_bar'));
+
+        $this->assertTrue($container->has('cache.service.dic.service_foo'));
+        $this->assertTrue($container->has('cache.service.dic.service_bar'));
+
+        $this->assertTrue($container->get('cache.service.dic.service_foo')->hasMethod('publicMethod'));
+    }
 }

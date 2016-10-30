@@ -1,0 +1,25 @@
+services:
+    decorated_service_foo:
+        class: Cache\CacheBundle\Tests\Unit\Stub\Services\Foo
+    decorated_service_bar:
+        class: Cache\CacheBundle\Tests\Unit\Stub\Services\Bar
+    cache_item_pool:
+        class: Cache\CacheBundle\Tests\Unit\Stub\Cache\CacheItemPool
+
+cache:
+    dic:
+        enabled: true
+        services:
+            service_foo:
+                methods:
+                    publicMethod:
+                        service_id: cache_item_pool
+                        ttl: 90
+            service_bar:
+                methods:
+                    onBarCall:
+                        service_id: cache_item_pool
+                        ttl: 90
+                    onBazCall:
+                        service_id: cache_item_pool
+                        ttl: 90
