@@ -17,9 +17,12 @@ use Cache\CacheBundle\Factory\DoctrineBridgeFactory;
 use Cache\CacheBundle\Factory\SessionHandlerFactory;
 use Cache\CacheBundle\Factory\ValidationFactory;
 use Cache\CacheBundle\Routing\CachingRouter;
+use Cache\CacheBundle\Service\CachingService;
+use Cache\CacheBundle\Service\CachingServiceMethod;
 use Cache\SessionHandler\Psr6SessionHandler;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Loader;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
@@ -43,7 +46,7 @@ class CacheExtension extends Extension
         $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
 
         // Make sure config values are in the parameters
-        foreach (['router', 'session', 'doctrine', 'logging', 'annotation', 'serializer', 'validation'] as $section) {
+        foreach (['router', 'session', 'doctrine', 'logging', 'annotation', 'serializer', 'validation', 'dic'] as $section) {
             if ($config[$section]['enabled']) {
                 $container->setParameter('cache.'.$section, $config[$section]);
             }
@@ -109,7 +112,7 @@ class CacheExtension extends Extension
     }
 
     /**
-     * Register services. All service ids will start witn "cache.service.".
+     * Register services. All service ids will start with "cache.service.".
      *
      * @param ContainerBuilder $container
      * @param $config
@@ -156,6 +159,32 @@ class CacheExtension extends Extension
                 ->addArgument(new Reference($config['router']['service_id']))
                 ->addArgument(new Reference('cache.service.router.inner'))
                 ->addArgument($config['router']);
+        }
+
+        if ($config['dic']['enabled']) {
+            foreach ($config['dic']['services'] as $serviceId => $methods) {
+                $decorator = 'cache.service.dic.'.$serviceId;
+                $container
+                    ->register($decorator, CachingService::class)
+                    ->setDecoratedService($serviceId)
+                    ->addArgument(new Reference($serviceId))//$decorator.'.inner'))
+                ;
+                $definition = $container->getDefinition($decorator);
+
+                foreach ($methods['methods'] as $methodName => $methodConfiguration) {
+
+                    $methodDefinition = new Definition(
+                        CachingServiceMethod::class,
+                        [
+                            new Reference($methodConfiguration['service_id']),
+                            new Reference($decorator),
+                            $methodName,
+                            $methodConfiguration,
+                        ]
+                    );
+                    $definition->addMethodCall('addMethod', [$methodDefinition]);
+                }
+            }
         }
     }
 }
