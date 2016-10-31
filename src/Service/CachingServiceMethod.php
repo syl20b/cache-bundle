@@ -40,7 +40,13 @@ class CachingServiceMethod
         $this->name = $name;
     }
 
-    public function __invoke($arguments)
+    /**
+     * Invoke method
+     *
+     * @param array $arguments
+     * @return Psr\Cache\CacheItemInterface
+     */
+    public function __invoke(array $arguments)
     {
         $key = serialize($arguments);
 
@@ -49,5 +55,15 @@ class CachingServiceMethod
         }
 
         return $this->cache->getItem($key);
+    }
+
+    /**
+     * Get name
+     *
+     * @return string
+     */
+    public function getName()
+    {
+        return $this->name;
     }
 }

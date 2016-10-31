@@ -11,15 +11,20 @@
 
 namespace Cache\CacheBundle\Tests\Unit\DependencyInjection;
 
-use Cache\CacheBundle\Tests\Unit\TestCase;
+use Cache\CacheBundle\DependencyInjection\CacheExtension;
+use Cache\CacheBundle\Tests\Unit\ContainerTrait;
+use Matthias\SymfonyDependencyInjectionTest\PhpUnit\AbstractExtensionTestCase;
+use Symfony\Component\DependencyInjection\Extension\ExtensionInterface;
 
 /**
  * Class CacheExtensionTest.
  *
  * @author Aaron Scherer <aequasi@gmail.com>
  */
-class CacheExtensionTest extends TestCase
+class CacheExtensionTest extends AbstractExtensionTestCase
 {
+    use ContainerTrait;
+
     public function testRouterBuilder()
     {
         $container = $this->createContainerFromFile('router');
@@ -36,20 +41,31 @@ class CacheExtensionTest extends TestCase
     {
         $container = $this->createContainerFromFile('dic');
 
-        $this->assertTrue($container->has('service_foo'));
-        $this->assertTrue($container->has('service_bar'));
+        $this->assertTrue($container->has('decorated_service_foo'));
+        $this->assertTrue($container->has('decorated_service_bar'));
 
         $config = $container->getParameter('cache.dic');
 
         $this->assertTrue(isset($config['enabled']));
         $this->assertTrue($config['enabled']);
 
-        $this->assertTrue($container->has('service_foo'));
-        $this->assertTrue($container->has('service_bar'));
+        $this->assertTrue($container->has('decorated_service_foo'));
+        $this->assertTrue($container->has('decorated_service_bar'));
 
-        $this->assertTrue($container->has('cache.service.dic.service_foo'));
-        $this->assertTrue($container->has('cache.service.dic.service_bar'));
+        $this->assertTrue($container->has('cache.service.dic.decorated_service_foo'));
+        $this->assertTrue($container->has('cache.service.dic.decorated_service_bar'));
 
-        $this->assertTrue($container->get('cache.service.dic.service_foo')->hasMethod('publicMethod'));
+        $this->assertTrue($container->get('cache.service.dic.decorated_service_foo')->hasMethod('publicMethod'));
     }
+
+    /**
+     * @return array
+     */
+    protected function getContainerExtensions()
+    {
+        return [
+            new CacheExtension(),
+        ];
+    }
+
 }

@@ -10,12 +10,12 @@ cache:
     dic:
         enabled: true
         services:
-            service_foo:
+            decorated_service_foo:
                 methods:
                     publicMethod:
                         service_id: cache_item_pool
                         ttl: 90
-            service_bar:
+            decorated_service_bar:
                 methods:
                     onBarCall:
                         service_id: cache_item_pool

@@ -11,12 +11,6 @@
 
 namespace Cache\CacheBundle\Tests\Unit;
 
-use Cache\CacheBundle\DependencyInjection\CacheExtension;
-use Symfony\Component\Config\FileLocator;
-use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
-use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
-
 /**
  * Class TestCase.
  *
@@ -24,54 +18,5 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
  */
 class TestCase extends \PHPUnit_Framework_TestCase
 {
-    /**
-     * @param ContainerBuilder $container
-     * @param string           $file
-     */
-    protected function loadFromFile(ContainerBuilder $container, $file)
-    {
-        $loader = new YamlFileLoader($container, new FileLocator(__DIR__.'/Fixtures'));
-        $loader->load($file.'.yml');
-    }
-
-    /**
-     * @param array $data
-     *
-     * @return ContainerBuilder
-     */
-    protected function createContainer(array $data = [])
-    {
-        return new ContainerBuilder(new ParameterBag(array_merge(
-            [
-                'kernel.bundles'     => ['FrameworkBundle' => 'Symfony\\Bundle\\FrameworkBundle\\FrameworkBundle'],
-                'kernel.cache_dir'   => __DIR__,
-                'kernel.debug'       => false,
-                'kernel.environment' => 'test',
-                'kernel.name'        => 'kernel',
-                'kernel.root_dir'    => __DIR__,
-            ],
-            $data
-        )));
-    }
-
-    /**
-     * @param string $file
-     * @param array  $data
-     *
-     * @return ContainerBuilder
-     */
-    protected function createContainerFromFile($file, $data = [])
-    {
-        $container = $this->createContainer($data);
-        $container->registerExtension(new CacheExtension());
-        $this->loadFromFile($container, $file);
-
-        $container->getCompilerPassConfig()
-            ->setOptimizationPasses([]);
-        $container->getCompilerPassConfig()
-            ->setRemovingPasses([]);
-        $container->compile();
-
-        return $container;
-    }
+    use ContainerTrait;
 }

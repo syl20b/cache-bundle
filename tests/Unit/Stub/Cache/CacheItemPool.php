@@ -7,7 +7,7 @@ use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Cache\InvalidArgumentException;
 
-class CacheItemPoolFoo implements CacheItemPoolInterface
+class CacheItemPool implements CacheItemPoolInterface
 {
 
     public function getItem($key)
