@@ -173,17 +173,18 @@ class CacheExtension extends Extension
                 $container
                     ->register($decorator, CachingService::class)
                     ->setDecoratedService($serviceId)
-                    ->addArgument(new Reference($serviceId))//$decorator.'.inner'))
+                    ->addArgument(new Reference($serviceId)) //$decorator.'.inner'))
+                    ->setPublic(false)
                 ;
+
                 $definition = $container->getDefinition($decorator);
 
                 foreach ($methods['methods'] as $methodName => $methodConfiguration) {
-
                     $methodDefinition = new Definition(
                         CachingServiceMethod::class,
                         [
                             new Reference($methodConfiguration['service_id']),
-                            new Reference($decorator),
+                            new Reference($serviceId), //$decorator.'.inner'),
                             $methodName,
                             $methodConfiguration,
                         ]

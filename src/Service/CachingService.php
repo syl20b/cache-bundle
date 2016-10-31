@@ -8,6 +8,11 @@ namespace Cache\CacheBundle\Service;
 class CachingService
 {
     /**
+     * @var object
+     */
+    protected $service;
+
+    /**
      * @var array
      */
     protected $methods = [];
@@ -20,6 +25,12 @@ class CachingService
         $this->service = $service;
     }
 
+    /**
+     * Add
+     *
+     * @param CachingServiceMethod $method
+     * @return CachingService
+     */
     public function addMethod(CachingServiceMethod $method)
     {
         $this->methods[$method->getName()] = $method;
@@ -27,12 +38,20 @@ class CachingService
         return $this;
     }
 
+    /**
+     * Caching service has method
+     *
+     * @param string $name
+     * @return bool
+     */
     public function hasMethod($name)
     {
         return array_key_exists($name, $this->methods);
     }
 
     /**
+     *
+     *
      * @param string $name
      * @param array  $arguments
      * @return mixed

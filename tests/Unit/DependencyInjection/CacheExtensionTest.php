@@ -11,10 +11,12 @@
 
 namespace Cache\CacheBundle\Tests\Unit\DependencyInjection;
 
+use Cache\CacheBundle\Tests\Unit\Stub\Cache\CacheItemPool;
+use Cache\CacheBundle\Tests\Unit\Stub\Services\Bar;
+use Cache\CacheBundle\Tests\Unit\Stub\Services\Foo;
+use Matthias\SymfonyDependencyInjectionTest\PhpUnit\AbstractExtensionTestCase;
 use Cache\CacheBundle\DependencyInjection\CacheExtension;
 use Cache\CacheBundle\Tests\Unit\ContainerTrait;
-use Matthias\SymfonyDependencyInjectionTest\PhpUnit\AbstractExtensionTestCase;
-use Symfony\Component\DependencyInjection\Extension\ExtensionInterface;
 
 /**
  * Class CacheExtensionTest.
@@ -37,7 +39,7 @@ class CacheExtensionTest extends AbstractExtensionTestCase
         $this->assertEquals($config['service_id'], 'default');
     }
 
-    public function testDependencyInjectionContainerBuilder()
+/*    public function testDependencyInjectionContainerBuilder()
     {
         $container = $this->createContainerFromFile('dic');
 
@@ -57,6 +59,50 @@ class CacheExtensionTest extends AbstractExtensionTestCase
 
         $this->assertTrue($container->get('cache.service.dic.decorated_service_foo')->hasMethod('publicMethod'));
     }
+*/
+    /**
+     *
+     */
+    public function testAfterLoadingTheCorrectConfiguration()
+    {
+        $this->setParameter('kernel.debug', false);
+        $this->registerService('cache_item_pool', new CacheItemPool());
+        $this->registerService('decorated_service_foo', new Foo());
+
+        $this->load(
+            [
+                'dic' =>
+                    [
+                        'enabled' => true,
+                        'services' =>
+                            [
+                                'decorated_service_foo' =>
+                                    [
+                                        'methods' =>
+                                            [
+                                                'publicMethod' =>
+                                                    [
+                                                        'service_id' => 'cache_item_pool',
+                                                        'ttl' => 10,
+                                                    ]
+                                            ],
+                                    ],
+                            ]
+                    ],
+            ]
+        );
+
+        $this->assertContainerBuilderHasService('cache_item_pool');
+        $this->assertContainerBuilderHasService('decorated_service_foo');
+        $this->assertContainerBuilderHasService('cache.service.dic.decorated_service_foo');
+
+        $this->assertTrue(
+            $this->container->get('cache.service.dic.decorated_service_foo')->hasMethod('publicMethod')
+        );
+        $this->assertFalse(
+            $this->container->get('cache.service.dic.decorated_service_foo')->hasMethod('foo')
+        );
+    }
 
     /**
      * @return array
@@ -67,5 +113,4 @@ class CacheExtensionTest extends AbstractExtensionTestCase
             new CacheExtension(),
         ];
     }
-
 }
