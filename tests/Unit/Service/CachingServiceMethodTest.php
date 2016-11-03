@@ -43,7 +43,7 @@ class CachingServiceMethodTest extends TestCase
      * @expectedException \DomainException
      * @expectedExceptionMessageRegExp /Method "\w+" not found in class "[^"]*"/
      */
-    public function testInvalidNameArgumentInConstructor()
+    public function testServiceMethodNotFound()
     {
         $cache = new CacheItemPool();
         $service = new Foo();
