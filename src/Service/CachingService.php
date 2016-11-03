@@ -13,44 +13,20 @@ class CachingService
     protected $service;
 
     /**
-     * @var array
+     * @var CachingServiceMethodCollection
      */
-    protected $methods = [];
+    protected $methodCollection;
 
     /**
      * @param object $service
      */
-    public function __construct($service)
+    public function __construct($service, CachingServiceMethodCollection $methodCollection)
     {
         $this->service = $service;
+        $this->methodCollection = $methodCollection;
     }
 
     /**
-     * Add
-     *
-     * @param CachingServiceMethod $method
-     * @return CachingService
-     */
-    public function addMethod(CachingServiceMethod $method)
-    {
-        $this->methods[$method->getName()] = $method;
-
-        return $this;
-    }
-
-    /**
-     * Caching service has method
-     *
-     * @param string $name
-     * @return bool
-     */
-    public function hasMethod($name)
-    {
-        return array_key_exists($name, $this->methods);
-    }
-
-    /**
-     *
      *
      * @param string $name
      * @param array  $arguments
@@ -58,8 +34,9 @@ class CachingService
      */
     public function __call($name, $arguments)
     {
-        if ($this->hasMethod($name)) {
-            return $this->methods[$name]($arguments);
+        if ($this->methodCollection->has($name)) {
+            $method = $this->methodCollection->get($name);
+            return $method($arguments);
         } else {
             return call_user_func_array([$this->service, $name], $arguments);
         }

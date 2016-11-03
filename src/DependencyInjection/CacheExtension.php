@@ -20,6 +20,7 @@ use Cache\CacheBundle\Factory\ValidationFactory;
 use Cache\CacheBundle\Routing\CachingRouter;
 use Cache\CacheBundle\Service\CachingService;
 use Cache\CacheBundle\Service\CachingServiceMethod;
+use Cache\CacheBundle\Service\CachingServiceMethodCollection;
 use Cache\SessionHandler\Psr6SessionHandler;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -170,27 +171,27 @@ class CacheExtension extends Extension
         if ($config['dic']['enabled']) {
             foreach ($config['dic']['services'] as $serviceId => $methods) {
                 $decorator = 'cache.service.dic.'.$serviceId;
-                $container
-                    ->register($decorator, CachingService::class)
-                    ->setDecoratedService($serviceId)
-                    ->addArgument(new Reference($serviceId)) //$decorator.'.inner'))
-                    ->setPublic(false)
-                ;
-
-                $definition = $container->getDefinition($decorator);
-
+                $methodCollectionDefinition = new Definition(CachingServiceMethodCollection::class);
                 foreach ($methods['methods'] as $methodName => $methodConfiguration) {
                     $methodDefinition = new Definition(
                         CachingServiceMethod::class,
                         [
                             new Reference($methodConfiguration['service_id']),
-                            new Reference($serviceId), //$decorator.'.inner'),
+                            new Reference($decorator.'.inner'),
                             $methodName,
                             $methodConfiguration,
                         ]
                     );
-                    $definition->addMethodCall('addMethod', [$methodDefinition]);
+                    $methodCollectionDefinition->addMethodCall('add', [$methodDefinition]);
                 }
+
+                $container
+                    ->register($decorator, CachingService::class)
+                    ->setDecoratedService($serviceId)
+                    ->addArgument(new Reference($decorator.'.inner'))
+                    ->addArgument($methodCollectionDefinition)
+                    ->setPublic(false)
+                ;
             }
         }
     }

@@ -95,13 +95,6 @@ class CacheExtensionTest extends AbstractExtensionTestCase
         $this->assertContainerBuilderHasService('cache_item_pool');
         $this->assertContainerBuilderHasService('decorated_service_foo');
         $this->assertContainerBuilderHasService('cache.service.dic.decorated_service_foo');
-
-        $this->assertTrue(
-            $this->container->get('cache.service.dic.decorated_service_foo')->hasMethod('publicMethod')
-        );
-        $this->assertFalse(
-            $this->container->get('cache.service.dic.decorated_service_foo')->hasMethod('foo')
-        );
     }
 
     /**
