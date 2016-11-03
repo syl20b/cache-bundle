@@ -26,6 +26,11 @@ class CachingServiceMethod
     private $name;
 
     /**
+     * @var array
+     */
+    private $config = [];
+
+    /**
      * CachingServiceMethod constructor.
      *
      * @param CacheItemPoolInterface $cache
@@ -33,11 +38,24 @@ class CachingServiceMethod
      * @param string                 $name
      * @param array                  $config
      */
-    public function __construct(CacheItemPoolInterface $cache, $service, $name, array $config)
+    public function __construct(CacheItemPoolInterface $cache, $service, string $name, array $config = [])
     {
+        if (!is_object($service)) {
+            throw new \InvalidArgumentException(
+                sprintf('Service must be an object, "%s" given',  gettype($service))
+            );
+        }
+
+        if (!method_exists($service, $name)) {
+            throw new \DomainException(
+                sprintf('Method "%s" not found in class "%s"', $name, get_class($service))
+            );
+        }
+
         $this->cache = $cache;
         $this->service = $service;
         $this->name = $name;
+        $this->config = $config;
     }
 
     /**
