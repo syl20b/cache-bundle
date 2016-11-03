@@ -12,7 +12,6 @@
 namespace Cache\CacheBundle\Tests\Unit\DependencyInjection;
 
 use Cache\CacheBundle\Tests\Unit\Stub\Cache\CacheItemPool;
-use Cache\CacheBundle\Tests\Unit\Stub\Services\Bar;
 use Cache\CacheBundle\Tests\Unit\Stub\Services\Foo;
 use Matthias\SymfonyDependencyInjectionTest\PhpUnit\AbstractExtensionTestCase;
 use Cache\CacheBundle\DependencyInjection\CacheExtension;
