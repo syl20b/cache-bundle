@@ -27,6 +27,19 @@ class CachingServiceMethodTest extends TestCase
     }
 
     /**
+     * @expectedException \InvalidArgumentException
+     * @expectedExceptionMessageRegExp /Name must be a string, "\w+" given/
+     */
+    public function testInvalidNameArgumentInConstructor()
+    {
+        $cache = new CacheItemPool();
+        $service = new Foo();
+        $name = [];
+        $config = [];
+        $sut = new CachingServiceMethod($cache, $service, $name, $config);
+    }
+
+    /**
      * @expectedException \DomainException
      * @expectedExceptionMessageRegExp /Method "\w+" not found in class "[^"]*"/
      */

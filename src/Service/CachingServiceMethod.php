@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Cache\CacheBundle\Service;
 
 use Psr\Cache\CacheItemPoolInterface;
@@ -38,11 +37,17 @@ class CachingServiceMethod
      * @param string                 $name
      * @param array                  $config
      */
-    public function __construct(CacheItemPoolInterface $cache, $service, string $name, array $config = [])
+    public function __construct(CacheItemPoolInterface $cache, $service, $name, array $config = [])
     {
         if (!is_object($service)) {
             throw new \InvalidArgumentException(
                 sprintf('Service must be an object, "%s" given',  gettype($service))
+            );
+        }
+
+        if (!is_string($name)) {
+            throw new \InvalidArgumentException(
+                sprintf('Name must be a string, "%s" given',  gettype($name))
             );
         }
 
@@ -83,5 +88,13 @@ class CachingServiceMethod
     public function getName()
     {
         return $this->name;
+    }
+
+    /**
+     * @return string
+     */
+    public function getFullName()
+    {
+        return get_class($this->service).'::'.$this->getName();
     }
 }
