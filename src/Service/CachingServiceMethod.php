@@ -2,6 +2,7 @@
 
 namespace Cache\CacheBundle\Service;
 
+use Cache\Adapter\Common\CacheItem;
 use Psr\Cache\CacheItemPoolInterface;
 
 /**
@@ -66,18 +67,21 @@ class CachingServiceMethod
     /**
      * Invoke method
      *
-     * @param array $arguments
-     * @return Psr\Cache\CacheItemInterface
+     * @return mixed
      */
-    public function __invoke(array $arguments)
+    public function __invoke()
     {
-        $key = serialize($arguments);
+        $arguments = func_get_args();
+
+        $key = md5(serialize($arguments));
 
         if (!$this->cache->hasItem($key)) {
-            return call_user_func_array([$this->service, $this->name], $arguments);
+            $item = new CacheItem($key);
+            $item->set(call_user_func_array([$this->service, $this->name], $arguments));
+            $this->cache->save($item);
         }
 
-        return $this->cache->getItem($key);
+        return $this->cache->getItem($key)->get();
     }
 
     /**

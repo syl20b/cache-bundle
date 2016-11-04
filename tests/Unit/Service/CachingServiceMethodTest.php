@@ -2,6 +2,7 @@
 
 namespace Cache\CacheBundle\Tests\Unit\Service;
 
+use Cache\Adapter\PHPArray\ArrayCachePool;
 use Cache\CacheBundle\Tests\Unit\Stub\Services\Foo;
 use Cache\CacheBundle\Tests\Unit\TestCase;
 use Cache\CacheBundle\Service\CachingServiceMethod;
@@ -50,5 +51,19 @@ class CachingServiceMethodTest extends TestCase
         $name = uniqid('name');
         $config = [];
         $sut = new CachingServiceMethod($cache, $service, $name, $config);
+    }
+
+
+    public function testInvokeWhenKeyNotFound()
+    {
+        $cachePool = new ArrayCachePool();
+        $service = new Foo();
+        $name = 'methodWithArgument';
+        $config = [];
+        $arg = uniqid('arg');
+        $expected = call_user_func_array([$service, $name], [$arg]);
+
+        $sut = new CachingServiceMethod($cachePool, $service, $name, $config);
+        $this->assertEquals($expected, $sut($arg));
     }
 }

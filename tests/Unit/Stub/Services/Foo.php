@@ -9,6 +9,11 @@ class Foo
 
     }
 
+    public function methodWithArgument($arg)
+    {
+        return $arg;
+    }
+
     static public function staticPublicMethod()
     {
 
