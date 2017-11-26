@@ -3,6 +3,7 @@
 namespace Cache\CacheBundle\Tests\Unit\Service;
 
 use Cache\Adapter\PHPArray\ArrayCachePool;
+use Cache\CacheBundle\Tests\Unit\Stub\Services\Bar;
 use Cache\CacheBundle\Tests\Unit\Stub\Services\Foo;
 use Cache\CacheBundle\Tests\Unit\TestCase;
 use Cache\CacheBundle\Service\CachingServiceMethod;
@@ -53,7 +54,23 @@ class CachingServiceMethodTest extends TestCase
         $sut = new CachingServiceMethod($cache, $service, $name, $config);
     }
 
+    /**
+     *
+     */
+    public function testWithCallMagicMethod()
+    {
+        $cachePool = new ArrayCachePool();
+        $service = new Bar();
+        $name = 'inaccessibleMethod';
+        $config = [];
+        $expected = '__call';
+        $sut = new CachingServiceMethod($cachePool, $service, $name, $config);
+        $this->assertEquals($expected, $sut());
+    }
 
+    /**
+     *
+     */
     public function testInvokeWhenKeyNotFound()
     {
         $cachePool = new ArrayCachePool();
@@ -65,5 +82,21 @@ class CachingServiceMethodTest extends TestCase
 
         $sut = new CachingServiceMethod($cachePool, $service, $name, $config);
         $this->assertEquals($expected, $sut($arg));
+    }
+
+    /**
+     *
+     */
+    public function testGetName()
+    {
+        $name = 'methodWithArgument';
+        $sut = new CachingServiceMethod(
+            new ArrayCachePool(),
+            new Foo(),
+            $name,
+            []
+        );
+        $this->assertEquals($name, $sut->getName());
+        $this->assertEquals('Cache\CacheBundle\Tests\Unit\Stub\Services\Foo::'.$name, $sut->getFullName());
     }
 }

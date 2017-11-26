@@ -2,7 +2,7 @@
 
 namespace Cache\CacheBundle\Service;
 
-use Cache\Adapter\Common\CacheItem;
+use Cache\Taggable\TaggableItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
 
 /**
@@ -52,7 +52,7 @@ class CachingServiceMethod
             );
         }
 
-        if (!method_exists($service, $name)) {
+        if (!(method_exists($service, $name) || method_exists($service, '__call'))) {
             throw new \DomainException(
                 sprintf('Method "%s" not found in class "%s"', $name, get_class($service))
             );
@@ -62,6 +62,9 @@ class CachingServiceMethod
         $this->service = $service;
         $this->name = $name;
         $this->config = $config;
+        if (isset($config['use_tagging'])) {
+            $this->tagHandler = isset($config['tag_handler']) ? $config['tag_handler'] : null;
+        }
     }
 
     /**
@@ -73,19 +76,29 @@ class CachingServiceMethod
     {
         $arguments = func_get_args();
 
-        $key = md5(serialize($arguments));
+        $key = $this->generateCacheKey($arguments);
+        $item = $this->cache->getItem($key);
 
-        if (!$this->cache->hasItem($key)) {
-            $item = new CacheItem($key);
-            $item->set(call_user_func_array([$this->service, $this->name], $arguments));
+        if (!$item->isHit()) {
+            $item
+                ->set(call_user_func_array([$this->service, $this->name], $arguments))
+//                ->expiresAfter()
+            ;
+
+
+            if ($item instanceof TaggableItemInterface && isset($this->config['tag_handler'])) {
+
+                $item->addTag();
+            }
+
             $this->cache->save($item);
         }
 
-        return $this->cache->getItem($key)->get();
+        return $item->get();
     }
 
     /**
-     * Get name
+     * Get method name
      *
      * @return string
      */
@@ -95,10 +108,23 @@ class CachingServiceMethod
     }
 
     /**
+     * Get full method name
+     *
      * @return string
      */
     public function getFullName()
     {
         return get_class($this->service).'::'.$this->getName();
+    }
+
+    /**
+     * Generate cache key
+     *
+     * @param array $arguments
+     * @return string
+     */
+    public function generateCacheKey(array $arguments)
+    {
+        return md5(sprintf('%s.%s', $this->getFullName(), serialize($arguments)));
     }
 }

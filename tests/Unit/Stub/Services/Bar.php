@@ -13,4 +13,11 @@ class Bar
     {
 
     }
+
+    public function __call($name, $arguments)
+    {
+        if ($name == 'inaccessibleMethod') {
+            return '__call';
+        }
+    }
 }

@@ -18,10 +18,22 @@ class CachingService
     protected $methodCollection;
 
     /**
-     * @param object $service
+     * @param object                         $service
+     * @param CachingServiceMethodCollection $methodCollection
      */
     public function __construct($service, CachingServiceMethodCollection $methodCollection)
     {
+        foreach ($methodCollection as $method) {
+            if ($method->getObject() !== $service) {
+                throw new \DomainException(
+                    sprintf(
+                        'Invalid context: "%s" is not a valid method. Object must be an instance of "%s", "%s" given.',
+                        $method->getName(), get_class($service), get_class($method->getObject())
+                    )
+                );
+            }
+        }
+
         $this->service = $service;
         $this->methodCollection = $methodCollection;
     }
